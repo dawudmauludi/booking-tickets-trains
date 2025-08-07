@@ -9,6 +9,7 @@ import { HomePage } from "../pages/HomePage";
 import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
 import { SuccessPage } from "../pages/Customers/SuccessPage";
+import AdminLayout from "../Layouts/AdminLayout";
 
 const Router = createBrowserRouter([
     {
@@ -40,28 +41,25 @@ const Router = createBrowserRouter([
                 element: <Registrasi/>
             },
             {
-                path: "/admin",
-                element:(
-                    <ProtectedRoute allowedRoles={["admin"]}>
-                        <AppLayouts/>
-                    </ProtectedRoute>
-                ),
-                children: [
-                    {
-                        path: "/admin/dashboard",
-                        element: <Dashboard/>
-                    },
-                    {
-                        
-                    }
-                ]
-
-            },
-            {
                 path: '/unauthorized',
                 element: <Unauthorized/>
             }
+        ],
+    },
+    {
+        path: '/admin',
+        element: (
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminLayout/>
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                path: '/admin/dashboard',
+                element: <Dashboard/>
+            }
         ]
+
     }
 ]);
 
