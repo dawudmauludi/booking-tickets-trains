@@ -17,7 +17,7 @@ export default function AppLayouts() {
         <span>Booking Kereta</span>
         {user && (
           <button onClick={handleLogout} className="text-dark underline">
-            Logout ({user.role})
+            Logout ({user.name})
           </button>
         )}
       </header>

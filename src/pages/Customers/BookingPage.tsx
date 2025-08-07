@@ -1,7 +1,7 @@
     import { useLocation, useNavigate, useParams } from "react-router";
     import { useState } from "react";
     import { v4 as uuidv4 } from "uuid";
-    import type { Passenger } from "../../moks/BookingPassenger";
+    import type { Passenger } from "../../models/BookingPassenger";
     import { BookingStore } from "../../store/BookingStore";
 
     export function BookingPage() {

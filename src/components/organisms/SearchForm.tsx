@@ -6,7 +6,7 @@ import { Input } from "../atoms/Input";
 import { Button } from "../atoms/Button";
 import { PassengerSelector } from "../molecules/PassengerSelector";
 import { searchSchema, type SearchFormData } from "../../Validations/SearchFormData";
-import type { Station } from "../../moks/Station";
+import type { Station } from "../../models/Station";
 
 interface Props {
   onSearch: (data: SearchFormData) => void;

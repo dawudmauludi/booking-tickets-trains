@@ -8,10 +8,17 @@ export default function ProtectedRoute({
   children: React.ReactNode;
   allowedRoles?: string[];
 }) {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
 
-  if (!user) return <Navigate to="/auth/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
+  // Jika belum login
+  if (!user) {
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  // Jika role tidak sesuai
+  if (allowedRoles && !allowedRoles.includes(user.role ?? "")) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
   return <>{children}</>;
 }

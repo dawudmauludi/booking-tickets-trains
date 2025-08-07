@@ -1,7 +1,7 @@
-import type { Route } from "../moks/Route";
-import type { Schedule } from "../moks/Schedule";
-import type { Station } from "../moks/Station";
-import type { Train } from "../moks/Train";
+import type { Route } from "../models/Route";
+import type { Schedule } from "../models/Schedule";
+import type { Station } from "../models/Station";
+import type { Train } from "../models/Train";
 import type { SearchFormData } from "../Validations/SearchFormData";
 
 

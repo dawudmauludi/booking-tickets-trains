@@ -1,57 +1,56 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../store/UseAuthStore";
 import { useNavigate } from "react-router";
-import { addMockUser, mockUsers } from "../../moks/users";
+import UserService from "../../services/UserServices"; // ⬅️ penting
 
-export default function Registrasi(){
-    const [form, setForm] = useState({
+export default function Registrasi() {
+  const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     password_confirmation: "",
   });
 
-  const {setAuth} = useAuthStore();
+  const setAuth = useAuthStore((state) => state.login); // ⬅️ gunakan login method dari zustand
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({...form, [e.target.name]: e.target.value});
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = (e: React.FormEvent)=>{
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if(!form.name || !form.email || !form.password){
-        return alert("Semua field Wajib di isi")
+    if (!form.name || !form.email || !form.password) {
+      return alert("Semua field wajib diisi");
     }
 
-    if(!form.password !== !form.password_confirmation ){
-        return alert("Konfirmasi password tidak cocok")
+    if (form.password !== form.password_confirmation) {
+      return alert("Konfirmasi password tidak cocok");
     }
 
-      const isExist = mockUsers.find((u) => u.email === form.email);
-    if (isExist) {
-      return alert("Email sudah digunakan.");
-    }
+    try {
+      const res = await UserService.create({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: "customer", // bisa ubah jadi "admin" jika dibutuhkan
+      });
 
-      const newUser = addMockUser({
-      name: form.name,
-      email: form.email,
-      password: form.password,
-      role: "customer",
-    });
+      const { user, token, expires_at } = res;
 
-     setAuth(newUser, "dummy-token");
+      setAuth(user, token, expires_at); // simpan ke zustand
+      localStorage.setItem("token", token);
 
-    
-    if (newUser.role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/");
+      navigate("/auth/login")
+      
+    } catch (err: any) {
+      console.error("Gagal registrasi:", err);
+      alert("Gagal registrasi. Cek kembali inputan atau email sudah digunakan.");
     }
   };
 
-    return (
+  return (
     <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
       <h2 className="text-2xl font-bold">Register</h2>
       <input
