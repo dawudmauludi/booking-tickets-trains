@@ -5,10 +5,11 @@ import Unauthorized from "../pages/Unauthorized";
 import AppLayouts from "../pages/root";
 import Registrasi from "../pages/auth/RegistrasiPage";
 import { Dashboard } from "../pages/admin/Dashboard";
-import { HomePage } from "../pages/HomePage";
 import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
 import { SuccessPage } from "../pages/Customers/SuccessPage";
+import { HomePage } from "../pages/HomePage";
+import { HistoryPage } from "../pages/Customers/HistoryPage";
 
 const Router = createBrowserRouter([
     {
@@ -24,7 +25,7 @@ const Router = createBrowserRouter([
                 element: <BookingPage />, // Form penumpang
             },
             {
-                path: "/payment/:id",
+                path: "/payment/:bookingId",
                 element: <PaymentPage />, // Ringkasan dan simulasi bayar
             },
             {
@@ -38,6 +39,10 @@ const Router = createBrowserRouter([
             {
                 path: '/auth/registrasi',
                 element: <Registrasi/>
+            },
+            {
+                path: '/history',
+                element: <HistoryPage/>
             },
             {
                 path: "/admin/dashboard",

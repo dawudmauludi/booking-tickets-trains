@@ -1,6 +1,11 @@
 export interface Station {
-  id: number;         // ID stasiun (primary key)
-  code: string;       // Kode stasiun, misalnya "GMR", "YK"
-  name: string;       // Nama stasiun, misalnya "Gambir"
-  city: string;       // Kota tempat stasiun berada
+  id: string;
+  name: string;
+  code: string;
+  city: string;
+  latitude: string;
+  longitude: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }

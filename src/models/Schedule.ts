@@ -1,19 +1,15 @@
 import type { Train } from "./Train";
 import type { Route } from "./Route";
-import type { Station } from "./Station";
 
 export interface Schedule {
-  id: number;
-  train_id: number;
-  route_id: number;
+  id: string;
+  train_id: string;
+  route_id: string;
   departure_time: string;
   arrival_time: string;
-  available_seats: number;
-  price: number;
+  seat_available: number;
+  price: string;
 
-  // Optional properties from populated data
   train?: Train;
   route?: Route;
-  origin?: Station;
-  destination?: Station;
 }
