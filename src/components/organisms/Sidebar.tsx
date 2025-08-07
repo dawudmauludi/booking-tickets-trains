@@ -3,14 +3,14 @@ import { NavLink } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
   return (
-    <div className="bg-gradient-to-b from-slate-900 to-slate-800 min-h-screen w-64 p-4 text-gray-100 shadow-xl">
+    <div className="bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen w-64 p-4 text-gray-100 shadow-xl">
       <div className="flex items-center mb-8 px-4">
-        <div className="bg-indigo-600 p-2 rounded-lg mr-3">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-yellow-500 p-2 rounded-lg mr-3">
+          <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
-        <h4 className="text-xl font-bold text-white">Admin Panel</h4>
+        <h4 className="text-xl font-bold text-yellow-400">Admin Panel</h4>
       </div>
       <ul className="space-y-1">
         <li>
@@ -19,8 +19,8 @@ const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
               }`
             }
           >
@@ -37,8 +37,8 @@ const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
               }`
             }
           >
@@ -54,8 +54,8 @@ const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
               }`
             }
           >
@@ -72,8 +72,8 @@ const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
               }`
             }
           >
@@ -89,8 +89,8 @@ const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
               }`
             }
           >
@@ -106,8 +106,8 @@ const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-indigo-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
               }`
             }
           >
@@ -120,12 +120,12 @@ const Sidebar: React.FC = () => {
       </ul>
       
       {/* Logout Section */}
-      <div className="mt-auto pt-4 border-t border-slate-700">
+      <div className="mt-auto pt-4 border-t border-gray-600">
         <button className="flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-red-600 hover:text-white group">
           <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          Logout
+          <span className="font-medium">Logout</span>
         </button>
       </div>
     </div>
