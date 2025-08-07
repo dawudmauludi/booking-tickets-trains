@@ -10,6 +10,7 @@ import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
 import { SuccessPage } from "../pages/Customers/SuccessPage";
 import AdminLayout from "../Layouts/AdminLayout";
+import TransactionPage from "../pages/admin/transactions";
 
 const Router = createBrowserRouter([
     {
@@ -57,6 +58,10 @@ const Router = createBrowserRouter([
             {
                 path: '/admin/dashboard',
                 element: <Dashboard/>
+            },
+            {
+                path: '/admin/transactions',
+                element: <TransactionPage/>
             }
         ]
 
