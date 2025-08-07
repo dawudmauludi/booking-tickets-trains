@@ -11,6 +11,8 @@ import { PaymentPage } from "../pages/Customers/PaymentPage";
 import { SuccessPage } from "../pages/Customers/SuccessPage";
 import AdminLayout from "../Layouts/AdminLayout";
 import TransactionPage from "../pages/admin/transactions";
+import TrainsPage from "../pages/admin/trains";
+
 
 const Router = createBrowserRouter([
     {
@@ -62,6 +64,10 @@ const Router = createBrowserRouter([
             {
                 path: '/admin/transactions',
                 element: <TransactionPage/>
+            },
+            {
+                path: '/admin/trains',
+                element: <TrainsPage/>
             }
         ]
 
