@@ -5,10 +5,11 @@ import Unauthorized from "../pages/Unauthorized";
 import AppLayouts from "../pages/root";
 import Registrasi from "../pages/auth/RegistrasiPage";
 import { Dashboard } from "../pages/admin/dashboard";
-import { HomePage } from "../pages/HomePage";
 import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
 import { SuccessPage } from "../pages/Customers/SuccessPage";
+import { HomePage } from "../pages/HomePage";
+import { HistoryPage } from "../pages/Customers/HistoryPage";
 import AdminLayout from "../Layouts/AdminLayout";
 import RoutesPage from "../pages/admin/routes/index";
 import TransactionPage from "../pages/admin/transactions";
@@ -23,12 +24,12 @@ const Router = createBrowserRouter([
                 path: '/',
                 element: <HomePage/> 
             },
-             {
+            {
                 path: "/booking/:id",
                 element: <BookingPage />, // Form penumpang
             },
             {
-                path: "/payment/:id",
+                path: "/payment/:bookingId", 
                 element: <PaymentPage />, // Ringkasan dan simulasi bayar
             },
             {
@@ -42,6 +43,10 @@ const Router = createBrowserRouter([
             {
                 path: '/auth/registrasi',
                 element: <Registrasi/>
+            },
+            {
+                path: '/history',
+                element: <HistoryPage/>
             },
             {
                 path: '/unauthorized',
@@ -58,23 +63,22 @@ const Router = createBrowserRouter([
         ),
         children: [
             {
-                path: '/admin/dashboard',
+                path: 'dashboard',
                 element: <Dashboard/>
             },
             {
-                path: '/admin/routes',
+                path: 'routes',
                 element: <RoutesPage/>
             },
             {
-                path: '/admin/transactions',
+                path: 'transactions',
                 element: <TransactionPage/>
             },
             {
-                path: '/admin/stations',
+                path: 'stations',
                 element: <StationPage/>
             }
         ]
-
     }
 ]);
 
