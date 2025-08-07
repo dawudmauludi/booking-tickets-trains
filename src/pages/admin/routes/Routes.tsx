@@ -1,56 +1,151 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+interface Route {
+  id: number;
+}
 
 const RoutesPage: React.FC = () => {
-  const routes = [
-    { id: 1, from: 'Jakarta', to: 'Bandung', duration: '3 jam' },
-    { id: 2, from: 'Surabaya', to: 'Malang', duration: '2 jam' },
-    { id: 3, from: 'Yogyakarta', to: 'Semarang', duration: '4 jam' },
-  ];
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newRouteId, setNewRouteId] = useState('');
+  const [editRoute, setEditRoute] = useState<Route | null>(null);
+
+  const fetchRoutes = async () => {
+    try {
+      const response = await axios.get('/api/routes');
+      console.log('response.data:', response.data);
+      setRoutes(response.data); // pastikan response.data adalah array
+    } catch (error) {
+      console.error('Failed to fetch routes', error);
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
+      await axios.post('/api/routes', { id: Number(newRouteId) });
+      setShowModal(false);
+      setNewRouteId('');
+      fetchRoutes();
+    } catch (error) {
+      console.error('Failed to create route', error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editRoute) return;
+    try {
+      await axios.put(`/api/routes/${editRoute.id}`, { id: Number(newRouteId) });
+      setShowModal(false);
+      setNewRouteId('');
+      setEditRoute(null);
+      fetchRoutes();
+    } catch (error) {
+      console.error('Failed to update route', error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await axios.delete(`/api/routes/${id}`);
+      fetchRoutes();
+    } catch (error) {
+      console.error('Failed to delete route', error);
+    }
+  };
+
+  const openModalForCreate = () => {
+    setEditRoute(null);
+    setNewRouteId('');
+    setShowModal(true);
+  };
+
+  const openModalForEdit = (route: Route) => {
+    setEditRoute(route);
+    setNewRouteId(route.id.toString());
+    setShowModal(true);
+  };
+
+  useEffect(() => {
+    fetchRoutes();
+  }, []);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Manajemen Rute</h1>
-        <p className="text-gray-500 mt-1">Kelola rute perjalanan kereta api</p>
-      </div>
-
-      <div className="mb-4 flex justify-end">
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
-          Tambah Rute
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Routes</h1>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={openModalForCreate}
+        >
+          + Add Route
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">#</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Asal</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Tujuan</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Durasi</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Aksi</th>
+      <table className="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr className="bg-gray-100 text-left">
+            <th className="py-2 px-4 border-b">ID</th>
+            <th className="py-2 px-4 border-b">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.isArray(routes) && routes.map((route) => (
+            <tr key={route.id} className="hover:bg-gray-50">
+              <td className="py-2 px-4 border-b">{route.id}</td>
+              <td className="py-2 px-4 border-b space-x-2">
+                <button
+                  onClick={() => openModalForEdit(route)}
+                  className="text-yellow-500 hover:text-yellow-600"
+                >
+                  ✏️
+                </button>
+                <button
+                  onClick={() => handleDelete(route.id)}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  🗑️
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 text-gray-700">
-            {routes.map((route, index) => (
-              <tr key={route.id}>
-                <td className="px-6 py-4">{index + 1}</td>
-                <td className="px-6 py-4">{route.from}</td>
-                <td className="px-6 py-4">{route.to}</td>
-                <td className="px-6 py-4">{route.duration}</td>
-                <td className="px-6 py-4 space-x-2">
-                  <button className="px-3 py-1 text-sm bg-yellow-400 text-white rounded hover:bg-yellow-500">
-                    Edit
-                  </button>
-                  <button className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
-                    Hapus
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-semibold mb-4">
+              {editRoute ? 'Edit Route' : 'Add Route'}
+            </h2>
+            <input
+              type="number"
+              value={newRouteId}
+              onChange={(e) => setNewRouteId(e.target.value)}
+              placeholder="Enter ID"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditRoute(null);
+                }}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={editRoute ? handleUpdate : handleCreate}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                {editRoute ? 'Update' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
