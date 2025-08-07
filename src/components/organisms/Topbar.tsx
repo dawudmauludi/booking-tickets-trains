@@ -15,7 +15,7 @@ const Topbar: React.FC = () => {
           </div>
           <div className="flex items-center space-x-4">
             {/* Search Bar */}
-            <div className="relative hidden md:block">
+            {/* <div className="relative hidden md:block">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -26,15 +26,15 @@ const Topbar: React.FC = () => {
                 placeholder="Search..."
                 className="block w-full pl-10 pr-3 py-2 border border-gray-600 rounded-lg leading-5 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400 sm:text-sm"
               />
-            </div>
+            </div> */}
             
             {/* Notifications */}
-            <button className="relative p-2 text-gray-300 hover:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-lg transition-colors">
+            {/* <button className="relative p-2 text-gray-300 hover:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-lg transition-colors">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7 7l3.12 3.12M3 3l18 18" />
               </svg>
               <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-yellow-400 ring-2 ring-gray-800"></span>
-            </button>
+            </button> */}
             
             {/* User Profile */}
             <div className="flex items-center space-x-3">

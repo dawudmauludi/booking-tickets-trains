@@ -59,6 +59,24 @@ export default function RoutesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [stations, setStations] = useState<Station[]>([]);
+
+  const fetchStations = async () => {
+    try {
+      const response = await api.get<{ success: boolean; data: Station[] }>('/stations/all');
+      console.log(response)
+      if (Array.isArray(response.data.data)) {
+        setStations(response.data.data);
+      } else {
+        setStations([]);
+        console.error('Stations data is not an array:', response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching stations:', error);
+      setStations([]);
+    }
+  };
+
   const [formData, setFormData] = useState({
     origin_id: '',
     destination_id: ''
@@ -66,6 +84,7 @@ export default function RoutesPage() {
 
   useEffect(() => {
     fetchRoutes();
+    fetchStations();
   }, []);
 
   useEffect(() => {
@@ -94,7 +113,7 @@ export default function RoutesPage() {
     setLoading(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -166,6 +185,12 @@ export default function RoutesPage() {
       }
     }
   };
+
+  // Filter available destination stations based on selected origin
+  const availableDestinations = Array.isArray(stations) ? stations.filter(station => station.id !== formData.origin_id) : [];
+  
+  // Filter available origin stations based on selected destination
+  const availableOrigins = Array.isArray(stations) ? stations.filter(station => station.id !== formData.destination_id) : [];
 
   if (loading) {
     return (
@@ -318,27 +343,41 @@ export default function RoutesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Origin ID</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-300 mb-2">Origin Station</label>
+                <select
                   name="origin_id"
                   value={formData.origin_id}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-white"
                   required
-                />
+                >
+                  <option value="" selected disabled>Select Origin Station</option>
+
+                  {availableOrigins.map(station => (
+                    <option key={station.id} value={station.id}>
+                      {station.city} - {station.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Destination ID</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-300 mb-2">Destination Station</label>
+                <select
                   name="destination_id"
                   value={formData.destination_id}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-white"
                   required
-                />
+                >
+                  <option value="" selected disabled>Select Destination Station</option>
+
+                  {availableDestinations.map(station => (
+                    <option key={station.id} value={station.id}>
+                      {station.city} - {station.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex justify-end space-x-4 mt-8">
