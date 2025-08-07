@@ -11,8 +11,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import { FaTrainSubway, FaBookmark, FaCalendarDays } from 'react-icons/fa6';
-import { FaBuilding } from 'react-icons/fa';
+import { FaTrainSubway, FaLocationDot, FaUsers, FaCalendarDays } from 'react-icons/fa6';
+import api from '../../../api/api';
 
 // Register ChartJS components
 ChartJS.register(
@@ -26,66 +26,113 @@ ChartJS.register(
   Legend
 );
 
-export const Dashboard = () => {
-    // Generate random monthly data
-    const [monthlyProfitData, setMonthlyProfitData] = useState({
-        labels: ['January', 'February', 'March', 'April'],
-        datasets: [{
-            label: 'Monthly Profit',
-            data: [
-                Math.floor(Math.random() * 1000000000),
-                Math.floor(Math.random() * 1000000000),
-                Math.floor(Math.random() * 1000000000),
-                Math.floor(Math.random() * 1000000000)
-            ],
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    });
+interface DashboardData {
+    total_station: number;
+    total_train: number;
+    total_route: number;
+    total_schedule: number;
+    total_booking: number;
+    profit_4_last_month: {
+        [key: string]: string | number;
+    };
+    profit_7_last_week: {
+        [key: string]: string | number;
+    };
+}
 
-    // Generate random daily data
-    const [dailyProfitData, setDailyProfitData] = useState({
-        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-        datasets: [{
-            label: 'Daily Profit',
-            data: [
-                Math.floor(Math.random() * 100000000),
-                Math.floor(Math.random() * 100000000),
-                Math.floor(Math.random() * 100000000),
-                Math.floor(Math.random() * 100000000),
-                Math.floor(Math.random() * 100000000),
-                Math.floor(Math.random() * 100000000),
-                Math.floor(Math.random() * 100000000)
-            ],
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-        }]
-    });
+interface ApiResponse {
+    success: boolean;
+    message: string;
+    data: DashboardData;
+}
+
+export const Dashboard = () => {
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<any>(null);
+    const [monthlyProfitData, setMonthlyProfitData] = useState<any>(null);
+    const [dailyProfitData, setDailyProfitData] = useState<any>(null);
+
+    const fetchDashboard = async () => {
+        console.log('🔄 Memulai pengambilan data dashboard...');
+        try {
+            console.log('📡 Mengirim request ke /dashboard/admin');
+            const response = await api.get<ApiResponse>('/dashboard/admin');
+            console.log('✅ Response diterima:', response.data);
+            
+            if (response.data.success) {
+                console.log('✅ Data berhasil diambil:', response.data.data);
+                setDashboardData(response.data.data);
+                
+                // Set monthly profit data
+                const monthlyLabels = Object.keys(response.data.data.profit_4_last_month);
+                const monthlyValues = Object.values(response.data.data.profit_4_last_month);
+                setMonthlyProfitData({
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Monthly Profit',
+                        data: monthlyValues,
+                        backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                        borderColor: 'rgba(234, 179, 8, 1)',
+                        borderWidth: 2
+                    }]
+                });
+                
+                // Set daily profit data
+                const dailyLabels = Object.keys(response.data.data.profit_7_last_week);
+                const dailyValues = Object.values(response.data.data.profit_7_last_week);
+                setDailyProfitData({
+                    labels: dailyLabels,
+                    datasets: [{
+                        label: 'Daily Profit',
+                        data: dailyValues,
+                        backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                        borderColor: 'rgba(234, 179, 8, 1)',
+                        borderWidth: 2
+                    }]
+                });
+            } else {
+                console.error('❌ API mengembalikan error:', response.data.message);
+                setError(new Error(response.data.message));
+            }
+        } catch (error: any) {
+            console.error('❌ Error saat mengambil data:', error);
+            setError(error);
+        } finally {
+            console.log('🏁 Proses pengambilan data selesai');
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        // Generate new random data every 5 seconds
-        const interval = setInterval(() => {
-            setMonthlyProfitData(prev => ({
-                ...prev,
-                datasets: [{
-                    ...prev.datasets[0],
-                    data: prev.labels.map(() => Math.floor(Math.random() * 1000000000))
-                }]
-            }));
-
-            setDailyProfitData(prev => ({
-                ...prev,
-                datasets: [{
-                    ...prev.datasets[0],
-                    data: prev.labels.map(() => Math.floor(Math.random() * 100000000))
-                }]
-            }));
-        }, 5000);
-
-        return () => clearInterval(interval);
+        console.log('🚀 Komponen Dashboard dimount, memulai pengambilan data...');
+        fetchDashboard();
+        // Set up auto-refresh every 5 minutes
+        console.log('⏰ Auto-refresh diatur setiap 5 menit');
+        const interval = setInterval(fetchDashboard, 5 * 60 * 1000);
+        return () => {
+            console.log('🧹 Membersihkan interval auto-refresh');
+            clearInterval(interval);
+        };
     }, []);
+
+    // Manual refresh function with debounce to prevent rapid refreshes
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const handleRefresh = async () => {
+        if (isRefreshing) {
+            console.log('⚠️ Refresh sedang berlangsung, mengabaikan request baru');
+            return;
+        }
+        console.log('🔄 Manual refresh dimulai...');
+        setIsRefreshing(true);
+        setLoading(true);
+        await fetchDashboard();
+        console.log('⏳ Cooldown 5 detik dimulai...');
+        setTimeout(() => {
+            console.log('✅ Cooldown selesai, refresh dapat dilakukan lagi');
+            setIsRefreshing(false);
+        }, 5000); // 5 second cooldown
+    };
 
     const chartOptions = {
         responsive: true,
@@ -100,10 +147,53 @@ export const Dashboard = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    <strong className="font-bold">Error!</strong>
+                    <span className="block">{error.message}</span>
+                    <button 
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className={`mt-4 ${isRefreshing ? 'bg-gray-500' : 'bg-red-500 hover:bg-red-600'} text-white px-4 py-2 rounded`}
+                    >
+                        {isRefreshing ? 'Refreshing...' : 'Retry'}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!dashboardData) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-white">No data available</div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 bg-gray-900 min-h-screen">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold mb-4 text-yellow-400">Admin Dashboard</h1>
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold text-yellow-400">Admin Dashboard</h1>
+                    <button 
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className={`${isRefreshing ? 'bg-gray-400' : 'bg-yellow-400 hover:bg-yellow-500'} text-gray-900 px-4 py-2 rounded transition-colors`}
+                    >
+                        {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                    </button>
+                </div>
                 
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -111,25 +201,25 @@ export const Dashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-gray-400 text-sm">Total Stations</h3>
-                                <p className="text-2xl font-bold text-white">156</p>
+                                <p className="text-2xl font-bold text-white">{dashboardData.total_station}</p>
                             </div>
-                            <FaBuilding className="text-3xl text-yellow-400" />
+                            <FaLocationDot className="text-3xl text-yellow-400" />
                         </div>
                     </div>
                     <div className="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-700">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-gray-400 text-sm">Total Bookings</h3>
-                                <p className="text-2xl font-bold text-white">1,234</p>
+                                <p className="text-2xl font-bold text-white">{dashboardData.total_booking}</p>
                             </div>
-                            <FaBookmark className="text-3xl text-yellow-400" />
+                            <FaUsers className="text-3xl text-yellow-400" />
                         </div>
                     </div>
                     <div className="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-700">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-gray-400 text-sm">Total Trains</h3>
-                                <p className="text-2xl font-bold text-white">42</p>
+                                <p className="text-2xl font-bold text-white">{dashboardData.total_train}</p>
                             </div>
                             <FaTrainSubway className="text-3xl text-yellow-400" />
                         </div>
@@ -138,7 +228,7 @@ export const Dashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-gray-400 text-sm">Active Schedules</h3>
-                                <p className="text-2xl font-bold text-white">245</p>
+                                <p className="text-2xl font-bold text-white">{dashboardData.total_schedule}</p>
                             </div>
                             <FaCalendarDays className="text-3xl text-yellow-400" />
                         </div>
@@ -150,13 +240,25 @@ export const Dashboard = () => {
                     <div className="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-700">
                         <h2 className="text-lg font-semibold mb-4 text-yellow-400">Monthly Profit (Last 4 Months)</h2>
                         <div style={{ height: '400px' }}>
-                            <Line data={monthlyProfitData} options={chartOptions} />
+                            {monthlyProfitData ? (
+                                <Line data={monthlyProfitData} options={chartOptions} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-700">
                         <h2 className="text-lg font-semibold mb-4 text-yellow-400">Daily Profit (Last 7 Days)</h2>
                         <div style={{ height: '400px' }}>
-                            <Bar data={dailyProfitData} options={chartOptions} />
+                            {dailyProfitData ? (
+                                <Bar data={dailyProfitData} options={chartOptions} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
