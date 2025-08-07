@@ -1,6 +1,6 @@
 export interface Train {
   id: number;
   name: string;
-  train_type: string;
+  class: string;
   code: string;
 }

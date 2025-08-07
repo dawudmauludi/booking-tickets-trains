@@ -1,178 +1,365 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { FaTrash, FaEdit, FaPlus, FaRoute, FaMapMarkerAlt, FaTrain } from 'react-icons/fa';
 import api from "../../../api/api";
 import Swal from "sweetalert2";
+
+interface Station {
+  id: string;
+  name: string;
+  code: string;
+  latitude: string;
+  longitude: string;
+  city: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
 
 interface Route {
   id: string;
   origin_id: string;
   destination_id: string;
+  origin: Station;
+  destination: Station;
 }
 
-const RoutesPage = () => {
-  const [routes, setRoutes] = useState<Route[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editingRoute, setEditingRoute] = useState<Route | null>(null);
-  const [form, setForm] = useState({ origin_id: "", destination_id: "" });
+interface PaginationLink {
+  url: string | null;
+  label: string;
+  active: boolean;
+}
 
-  const fetchRoutes = async () => {
-    try {
-      const res = await api.get("/routes");
-      setRoutes(res.data.data.data);
-    } catch (err) {
-      console.error(err);
-    }
+interface ApiResponse {
+  success: boolean;
+  data: {
+    current_page: number;
+    data: Route[];
+    links: PaginationLink[];
   };
+}
+
+// Function to calculate distance between two points using Haversine formula
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c);
+};
+
+export default function RoutesPage() {
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [pagination, setPagination] = useState<PaginationLink[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [formData, setFormData] = useState({
+    origin_id: '',
+    destination_id: ''
+  });
 
   useEffect(() => {
     fetchRoutes();
   }, []);
 
-  const handleCreate = async () => {
+  useEffect(() => {
+    if (selectedRoute) {
+      setFormData({
+        origin_id: selectedRoute.origin_id,
+        destination_id: selectedRoute.destination_id
+      });
+    } else {
+      setFormData({
+        origin_id: '',
+        destination_id: ''
+      });
+    }
+  }, [selectedRoute]);
+
+  const fetchRoutes = async (url: string = '/routes') => {
+    setLoading(true);
     try {
-      await api.post("/routes", form);
-      setForm({ origin_id: "", destination_id: "" });
-      setShowModal(false);
-      Swal.fire("Sukses", "Rute berhasil ditambahkan", "success");
+      const response = await api.get<ApiResponse>(url);
+      setRoutes(response.data.data.data);
+      setPagination(response.data.data.links);
+    } catch (error) {
+      setError(error);
+    }
+    setLoading(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (formMode === 'create') {
+        await api.post('/routes', formData);
+        await Swal.fire({
+          title: 'Success!',
+          text: 'Route has been created.',
+          icon: 'success',
+          confirmButtonColor: '#FBBF24'
+        });
+      } else {
+        await api.put(`/routes/${selectedRoute?.id}`, formData);
+        await Swal.fire({
+          title: 'Success!',
+          text: 'Route has been updated.',
+          icon: 'success',
+          confirmButtonColor: '#FBBF24'
+        });
+      }
+      setIsModalOpen(false);
       fetchRoutes();
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Gagal", "Terjadi kesalahan saat menambahkan rute", "error");
+    } catch (error) {
+      await Swal.fire({
+        title: 'Error!',
+        text: 'An error occurred while processing your request.',
+        icon: 'error',
+        confirmButtonColor: '#EF4444'
+      });
+      console.error('Error submitting form:', error);
     }
   };
 
   const handleDelete = async (id: string) => {
-    const confirm = await Swal.fire({
-      title: "Hapus Rute?",
-      text: "Tindakan ini tidak bisa dibatalkan",
-      icon: "warning",
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Ya, hapus",
+      confirmButtonColor: '#FBBF24',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Yes, delete it!'
     });
-    if (confirm.isConfirmed) {
+
+    if (result.isConfirmed) {
       try {
         await api.delete(`/routes/${id}`);
-        Swal.fire("Dihapus", "Rute berhasil dihapus", "success");
+        await Swal.fire({
+          title: 'Deleted!',
+          text: 'Route has been deleted.',
+          icon: 'success',
+          confirmButtonColor: '#FBBF24'
+        });
         fetchRoutes();
-      } catch (err) {
-        console.error(err);
-        Swal.fire("Gagal", "Terjadi kesalahan saat menghapus", "error");
+      } catch (error) {
+        await Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete route.',
+          icon: 'error',
+          confirmButtonColor: '#EF4444'
+        });
       }
     }
   };
 
-  const handleEdit = (route: Route) => {
-    setEditingRoute(route);
-    setForm({ origin_id: route.origin_id, destination_id: route.destination_id });
-    setShowModal(true);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-yellow-400"></div>
+      </div>
+    );
+  }
 
-  const handleUpdate = async () => {
-    try {
-      if (!editingRoute) return;
-      await api.put(`/routes/${editingRoute.id}`, form);
-      Swal.fire("Sukses", "Rute berhasil diperbarui", "success");
-      setEditingRoute(null);
-      setForm({ origin_id: "", destination_id: "" });
-      setShowModal(false);
-      fetchRoutes();
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Gagal", "Terjadi kesalahan saat memperbarui", "error");
-    }
-  };
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="bg-red-900 border-l-4 border-red-500 text-red-200 p-4 rounded-lg shadow-lg" role="alert">
+          <p className="font-bold">Error</p>
+          <p>{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-yellow-400">Daftar Rute</h1>
+    <div className="p-8 bg-gray-900 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center space-x-4">
+            <FaTrain className="text-yellow-400 text-5xl" />
+            <h1 className="text-4xl font-bold text-yellow-400">Routes Management</h1>
+          </div>
+          <button
+            onClick={() => {
+              setFormMode('create');
+              setSelectedRoute(null);
+              setIsModalOpen(true);
+            }}
+            className="px-6 py-3 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-400 transition-colors duration-200 flex items-center space-x-2 shadow-lg"
+          >
+            <FaPlus />
+            <span>Add New Route</span>
+          </button>
+        </div>
 
-      <button
-        onClick={() => {
-          setEditingRoute(null);
-          setForm({ origin_id: "", destination_id: "" });
-          setShowModal(true);
-        }}
-        className="mb-4 bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded"
-      >
-        Tambah Rute
-      </button>
+        <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                    <div className="flex items-center space-x-2">
+                      <FaMapMarkerAlt className="text-yellow-400" />
+                      <span>Origin</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                    <div className="flex items-center space-x-2">
+                      <FaMapMarkerAlt className="text-yellow-400" />
+                      <span>Destination</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Distance</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {routes.map((route) => {
+                  const distance = calculateDistance(
+                    parseFloat(route.origin.latitude),
+                    parseFloat(route.origin.longitude),
+                    parseFloat(route.destination.latitude),
+                    parseFloat(route.destination.longitude)
+                  );
+                  
+                  return (
+                    <tr key={route.id} className="hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">{route.origin.city}</span>
+                          <span className="text-gray-400 text-sm">{route.origin.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">{route.destination.city}</span>
+                          <span className="text-gray-400 text-sm">{route.destination.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-300">{distance} km</td>
+                      <td className="px-6 py-4">
+                        <div className="flex space-x-4">
+                          <button
+                            onClick={() => {
+                              setSelectedRoute(route);
+                              setFormMode('edit');
+                              setIsModalOpen(true);
+                            }}
+                            className="text-yellow-400 hover:text-yellow-300 transition-colors inline-flex items-center space-x-1"
+                          >
+                            <FaEdit />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(route.id)}
+                            className="text-red-400 hover:text-red-300 transition-colors inline-flex items-center space-x-1"
+                          >
+                            <FaTrash />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      <table className="w-full table-auto border border-gray-700 text-white">
-        <thead>
-          <tr className="bg-gray-800">
-            <th className="border px-4 py-2">ID</th>
-            <th className="border px-4 py-2">Origin ID</th>
-            <th className="border px-4 py-2">Destination ID</th>
-            <th className="border px-4 py-2">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {routes.map((route) => (
-            <tr key={route.id} className="bg-gray-900">
-              <td className="border px-4 py-2">{route.id}</td>
-              <td className="border px-4 py-2">{route.origin_id}</td>
-              <td className="border px-4 py-2">{route.destination_id}</td>
-              <td className="border px-4 py-2 space-x-2">
-                <button
-                  onClick={() => handleEdit(route)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(route.id)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                >
-                  Hapus
-                </button>
-              </td>
-            </tr>
+        <div className="flex justify-center mt-6 gap-2">
+          {pagination.map((link, index) => (
+            <button
+              key={index}
+              onClick={() => link.url && fetchRoutes(link.url)}
+              disabled={!link.url || link.active}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-150 ${
+                link.active 
+                  ? 'bg-yellow-500 text-gray-900'
+                  : link.url 
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-600'
+                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              }`}
+              dangerouslySetInnerHTML={{ __html: link.label }}
+            />
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-md w-96">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              {editingRoute ? "Edit Rute" : "Tambah Rute"}
-            </h2>
-            <input
-              type="text"
-              placeholder="Origin ID"
-              value={form.origin_id}
-              onChange={(e) => setForm({ ...form, origin_id: e.target.value })}
-              className="w-full px-3 py-2 mb-4 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="Destination ID"
-              value={form.destination_id}
-              onChange={(e) =>
-                setForm({ ...form, destination_id: e.target.value })
-              }
-              className="w-full px-3 py-2 mb-4 border rounded"
-            />
-            <div className="flex justify-end gap-2">
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-gray-800 rounded-xl p-8 w-full max-w-lg shadow-2xl border border-gray-700">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-yellow-400">
+                {formMode === 'create' ? 'Add New Route' : 'Edit Route'}
+              </h2>
               <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded"
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-300 text-xl"
               >
-                Batal
-              </button>
-              <button
-                onClick={editingRoute ? handleUpdate : handleCreate}
-                className="px-4 py-2 bg-yellow-400 text-black rounded"
-              >
-                {editingRoute ? "Update" : "Simpan"}
+                ✕
               </button>
             </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Origin ID</label>
+                <input
+                  type="text"
+                  name="origin_id"
+                  value={formData.origin_id}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Destination ID</label>
+                <input
+                  type="text"
+                  name="destination_id"
+                  value={formData.destination_id}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-white"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4 mt-8">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-400 transition-colors"
+                >
+                  {formMode === 'create' ? 'Create' : 'Update'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default RoutesPage;
+}

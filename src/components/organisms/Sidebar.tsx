@@ -1,9 +1,44 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import api from '../../api/api';
+import Swal from 'sweetalert2';
+
 
 const Sidebar: React.FC = () => {
+
+  const handleLogout = async () => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You will be logged out of the system",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, logout!'
+      });
+
+      if (result.isConfirmed) {
+        await api.post('/auth/logout');
+        await Swal.fire(
+          'Logged Out!',
+          'You have been successfully logged out.',
+          'success'
+        );
+        window.location.href = '/auth/login';
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      await Swal.fire(
+        'Error!',
+        'Failed to logout. Please try again.',
+        'error'
+      );
+    }
+  }
+
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen w-64 p-4 text-gray-100 shadow-xl">
+    <div className="bg-gradient-to-b from-gray-900 to-gray-800 h-screen w-64 p-4 text-gray-100 shadow-xl flex flex-col">
       <div className="flex items-center mb-8 px-4">
         <div className="bg-yellow-500 p-2 rounded-lg mr-3">
           <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,25 +47,28 @@ const Sidebar: React.FC = () => {
         </div>
         <h4 className="text-xl font-bold text-yellow-400">Admin Panel</h4>
       </div>
-      <ul className="space-y-1">
-        <li>
-          <NavLink 
-            to="/admin/dashboard"
-            className={({ isActive }) =>
-              `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
-                isActive 
-                  ? 'bg-yellow-500 text-gray-900 shadow-lg' 
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
-              }`
-            }
-          >
-            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
-            </svg>
-            Dashboard
-          </NavLink>
-        </li>
+      
+      {/* Navigation Menu */}
+      <nav className="flex-1 overflow-y-auto">
+        <ul className="space-y-1">
+          <li>
+            <NavLink 
+              to="/admin/dashboard"
+              className={({ isActive }) =>
+                `flex items-center px-4 py-3 rounded-lg transition-all duration-200 group ${
+                  isActive 
+                    ? 'bg-yellow-500 text-gray-900 shadow-lg' 
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-yellow-400'
+                }`
+              }
+            >
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
+              </svg>
+              Dashboard
+            </NavLink>
+          </li>
         <li>
           <NavLink 
             to="/admin/trains"
@@ -118,10 +156,12 @@ const Sidebar: React.FC = () => {
           </NavLink>
         </li>
       </ul>
+      </nav>
       
       {/* Logout Section */}
       <div className="mt-auto pt-4 border-t border-gray-600">
-        <button className="flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-red-600 hover:text-white group">
+        <button onClick={handleLogout} className="flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-red-600 hover:text-white group">
+
           <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>

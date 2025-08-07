@@ -11,9 +11,7 @@ interface BookingState {
   createBooking: (
     user_id: string,
     schedule_id: number,
-    total_price: number,
-    adultCount: number,
-    infantCount: number
+    total_price: number
   ) => Booking;
 
   addPassenger: (booking_id: string, passenger: Passenger) => void;
@@ -25,6 +23,8 @@ interface BookingState {
   updateBookingStatus: (id: string, status: "pending" | "paid" | "canceled") => void;
   expireOldBookings: () => void;
 
+  // Menambahkan tipe return void untuk setPaymentUrl
+  setPaymentUrl: (bookingId: string, paymentUrl: string) => void;
 }
 
 export const BookingStore = create<BookingState>()(
@@ -32,7 +32,7 @@ export const BookingStore = create<BookingState>()(
     (set, get) => ({
       bookings: [],
       passengers: [],
-
+      
       createBooking: (user_id, schedule_id, total_price) => {
         const newBooking: Booking = {
           id: uuidv4(),
@@ -42,12 +42,11 @@ export const BookingStore = create<BookingState>()(
           status: "pending",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          payment_url: "", // Initial empty value, will be updated later
         };
-
         set((state) => ({
           bookings: [...state.bookings, newBooking],
         }));
-
         return newBooking;
       },
 
@@ -70,28 +69,35 @@ export const BookingStore = create<BookingState>()(
             b.id === id ? { ...b, status, updated_at: new Date().toISOString() } : b
           ),
         }));
-        
       },
+
       expireOldBookings: () => {
-  const now = new Date();
-  set((state) => ({
-    bookings: state.bookings.map((b) => {
-      if (
-        b.status === "pending" &&
-        new Date(b.created_at).getTime() + 15 * 60 * 1000 < now.getTime()
-      ) {
-        return {
-          ...b,
-          status: "canceled",
-          updated_at: now.toISOString(),
-        };
-      }
-      return b;
-    }),
-  }));
-}
+        const now = new Date();
+        set((state) => ({
+          bookings: state.bookings.map((b) => {
+            if (
+              b.status === "pending" &&
+              new Date(b.created_at).getTime() + 15 * 60 * 1000 < now.getTime()
+            ) {
+              return {
+                ...b,
+                status: "canceled",
+                updated_at: now.toISOString(),
+              };
+            }
+            return b;
+          }),
+        }));
+      },
 
-
+      // Menambahkan `payment_url` setelah booking dibuat
+      setPaymentUrl: (bookingId: string, paymentUrl: string) => {
+        set((state) => ({
+          bookings: state.bookings.map((b) =>
+            b.id === bookingId ? { ...b, payment_url: paymentUrl } : b
+          ),
+        }));
+      },
     }),
     {
       name: "booking-storage", // nama key di localStorage
