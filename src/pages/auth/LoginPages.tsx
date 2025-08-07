@@ -18,7 +18,7 @@ export default function Login() {
       login(user, token, expires_at);
 
       if (user.role === "admin") {
-        navigate("/dashboard");
+        navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
