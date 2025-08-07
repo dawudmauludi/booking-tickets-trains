@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaTrain, FaLocationArrow, FaUser } from "react-icons/fa";
-import api from "../../../api/api"; // Impor api yang sudah dikonfigurasi
+import api from "../../../api/api"; // Import the pre-configured API
 
-// Mendeklarasikan interface Schedule untuk tipe data jadwal kereta
+// Declaring the Schedule interface for the train schedule data
 interface Schedule {
   id: string;
   train_id: string;
@@ -12,115 +11,144 @@ interface Schedule {
   price: string;
   seat_available: number;
   train: {
-    id: string;
     name: string;
     class: string;
     code: string;
     capacity: number;
   };
   route: {
-    id: string;
     origin: {
       name: string;
-      code: string;
-      city: string;
     };
     destination: {
       name: string;
-      code: string;
-      city: string;
     };
   };
 }
 
-interface Train {
-  id: string;
-  name: string;
-}
-
-interface Route {
-  id: string;
-  origin: string;
-  destination: string;
-}
-
 export default function SchedulesPage() {
-  // State untuk jadwal, data kereta, dan rute
+  // Declare state for schedules with the type Schedule[]
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [trains, setTrains] = useState<Train[]>([]);
-  const [routes, setRoutes] = useState<Route[]>([]);
-  const [showDialog, setShowDialog] = useState(false);
+  const [showModal, setShowModal] = useState(false); // State for modal visibility
   const [newSchedule, setNewSchedule] = useState({
     train_id: "",
     route_id: "",
     departure_time: "",
     arrival_time: "",
     price: 0,
-  });
+  }); // State for the new schedule form
 
+  // Fetch schedules data using the pre-configured API
   useEffect(() => {
-    // Mengambil data jadwal
     api
-      .get("/schedules/pagination")
+      .get("/schedules/pagination") // Endpoint for fetching schedules
       .then((response) => {
         if (response.data.success) {
-          setSchedules(response.data.data.data); // Memperbarui state dengan data jadwal
+          setSchedules(response.data.data.data); // Save the train schedule data
         }
       })
-      .catch((error) => console.error("Terjadi kesalahan saat mengambil data jadwal:", error));
-
-    // Mengambil data kereta (jika ada endpoint untuk itu)
-    api
-      .get("/trains")
-      .then((response) => setTrains(response.data))
-      .catch((error) => console.error("Terjadi kesalahan saat mengambil data kereta:", error));
-
-    // Mengambil data rute (jika ada endpoint untuk itu)
-    api
-      .get("/routes")
-      .then((response) => setRoutes(response.data))
-      .catch((error) => console.error("Terjadi kesalahan saat mengambil data rute:", error));
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  // Fungsi untuk menangani perubahan input form
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewSchedule((prev) => ({ ...prev, [name]: value }));
-  };
+  // Handle creating a new schedule
+  const handleCreateSchedule = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent form from refreshing the page
 
-  // Fungsi untuk meng-handle submit form
-  const handleCreateSchedule = () => {
     api
-      .post("/schedules", {
-        train_id: newSchedule.train_id,
-        route_id: newSchedule.route_id,
-        departure_time: newSchedule.departure_time,
-        arrival_time: newSchedule.arrival_time,
-        price: newSchedule.price,
-      })
+      .post("/schedules", newSchedule) // Send the new schedule to the API
       .then((response) => {
         if (response.data.success) {
-          alert("Jadwal berhasil ditambahkan");
-          setShowDialog(false);  // Menutup modal setelah submit
-          setSchedules([...schedules, response.data.schedule]);  // Menambahkan jadwal baru ke list
+          setSchedules([...schedules, response.data.data]); // Add the new schedule to the state
+          setShowModal(false); // Close the modal
         }
       })
-      .catch((error) => console.error("Terjadi kesalahan saat menambahkan jadwal:", error));
+      .catch((error) => console.error("Error creating schedule:", error));
   };
 
   return (
     <div className="bg-gray-800 text-white p-6">
       <h1 className="text-center text-3xl font-semibold mb-8">Jadwal Kereta - Admin</h1>
-      
-      {/* Tombol Create */}
       <button
-        onClick={() => setShowDialog(true)}  // Menampilkan modal saat tombol diklik
-        className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md mb-6"
+        onClick={() => setShowModal(true)} // Open modal when clicked
+        className="px-4 py-2 bg-blue-500 text-white rounded-lg mb-4"
       >
-        Create Jadwal
+        Tambah Jadwal
       </button>
 
-      {/* Tabel Jadwal */}
+      {/* Modal to create a new schedule */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4">Tambah Jadwal</h2>
+            <form onSubmit={handleCreateSchedule}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Kereta ID</label>
+                <input
+                  type="text"
+                  value={newSchedule.train_id}
+                  onChange={(e) => setNewSchedule({ ...newSchedule, train_id: e.target.value })}
+                  className="mt-1 p-2 w-full border rounded-md"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Rute ID</label>
+                <input
+                  type="text"
+                  value={newSchedule.route_id}
+                  onChange={(e) => setNewSchedule({ ...newSchedule, route_id: e.target.value })}
+                  className="mt-1 p-2 w-full border rounded-md"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Waktu Keberangkatan</label>
+                <input
+                  type="datetime-local"
+                  value={newSchedule.departure_time}
+                  onChange={(e) => setNewSchedule({ ...newSchedule, departure_time: e.target.value })}
+                  className="mt-1 p-2 w-full border rounded-md"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Waktu Kedatangan</label>
+                <input
+                  type="datetime-local"
+                  value={newSchedule.arrival_time}
+                  onChange={(e) => setNewSchedule({ ...newSchedule, arrival_time: e.target.value })}
+                  className="mt-1 p-2 w-full border rounded-md"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Harga (IDR)</label>
+                <input
+                  type="number"
+                  value={newSchedule.price}
+                  onChange={(e) => setNewSchedule({ ...newSchedule, price: +e.target.value })}
+                  className="mt-1 p-2 w-full border rounded-md"
+                  required
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)} // Close the modal without submitting
+                  className="mr-4 px-4 py-2 bg-gray-500 text-white rounded-md"
+                >
+                  Batal
+                </button>
+                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
+                  Simpan Jadwal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Table displaying the schedules */}
       <table
         className="min-w-full bg-gray-800 text-white rounded-lg shadow-xl overflow-hidden"
         style={{
@@ -170,103 +198,6 @@ export default function SchedulesPage() {
           ))}
         </tbody>
       </table>
-
-      {/* Modal untuk Create Schedule */}
-      {showDialog && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white text-black p-8 rounded-lg shadow-lg w-1/2">
-            <h2 className="text-xl font-semibold mb-4">Create Jadwal</h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleCreateSchedule();  // Menyimpan data saat submit
-              }}
-            >
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Train</label>
-                <select
-                  name="train_id"
-                  value={newSchedule.train_id}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="">Pilih Kereta</option>
-                  {Array.isArray(trains) &&
-                    trains.map((train) => (
-                      <option key={train.id} value={train.id}>
-                        {train.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Route</label>
-                <select
-                  name="route_id"
-                  value={newSchedule.route_id}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="">Pilih Rute</option>
-                  {routes.map((route) => (
-                    <option key={route.id} value={route.id}>
-                      {route.origin} - {route.destination}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Departure Time</label>
-                <input
-                  type="datetime-local"
-                  name="departure_time"
-                  value={newSchedule.departure_time}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Arrival Time</label>
-                <input
-                  type="datetime-local"
-                  name="arrival_time"
-                  value={newSchedule.arrival_time}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Price</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={newSchedule.price}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-6 py-2 rounded-md w-full"
-              >
-                Create Jadwal
-              </button>
-            </form>
-
-            <button
-              onClick={() => setShowDialog(false)}  // Menutup modal
-              className="mt-4 text-red-500 hover:text-red-700 w-full py-2"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

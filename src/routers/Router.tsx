@@ -134,7 +134,7 @@ const Router = createBrowserRouter([
                 element: <TransactionPage/>
             },
             {
-                path: '/admin/trains',
+                path: 'trains',
                 element: <TrainsPage/>
             },
             {
