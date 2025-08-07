@@ -10,6 +10,7 @@ import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
 import { SuccessPage } from "../pages/Customers/SuccessPage";
 import AdminLayout from "../Layouts/AdminLayout";
+import RoutesPage from "../pages/admin/routes/index";
 import TransactionPage from "../pages/admin/transactions";
 import StationPage from "../pages/admin/stations";
 
@@ -59,6 +60,10 @@ const Router = createBrowserRouter([
             {
                 path: '/admin/dashboard',
                 element: <Dashboard/>
+            },
+            {
+                path: '/admin/routes',
+                element: <RoutesPage/>
             },
             {
                 path: '/admin/transactions',
