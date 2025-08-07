@@ -1,40 +1,54 @@
-// src/store/useAuthStore.ts
+// src/store/AuthStore.ts
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 type User = {
   id: string;
   name: string;
   email: string;
-  password: string;
-  role: string;
+  created_at: string;
 };
 
-type AuthStore = {
+interface AuthState {
   user: User | null;
   token: string | null;
-  setAuth: (user: User, token: string) => void;
+  expires_at: string | null;
+
+  login: (user: User, token: string, expires_at: string) => void;
   logout: () => void;
-};
+  isLoggedIn: () => boolean;
+  isTokenExpired: () => boolean;
+}
 
-// ✅ Ambil dari localStorage saat store dibuat
-const storedUser = localStorage.getItem("user");
-const storedToken = localStorage.getItem("token");
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      expires_at: null,
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  user: storedUser ? JSON.parse(storedUser) : null,
-  token: storedToken ?? null,
+      login: (user, token, expires_at) => {
+        set({ user, token, expires_at });
+      },
 
-  setAuth: (user, token) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("role", user.role);
-    localStorage.setItem("user", JSON.stringify(user));
-    set({ user, token });
-  },
+      logout: () => {
+        set({ user: null, token: null, expires_at: null });
+      },
 
-  logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("user");
-    set({ user: null, token: null });
-  },
-}));
+      isLoggedIn: () => {
+        const { token, expires_at } = get();
+        if (!token || !expires_at) return false;
+        return new Date(expires_at) > new Date();
+      },
+
+      isTokenExpired: () => {
+        const { expires_at } = get();
+        if (!expires_at) return true;
+        return new Date(expires_at) < new Date();
+      },
+    }),
+    {
+      name: "auth-storage", 
+    }
+  )
+);

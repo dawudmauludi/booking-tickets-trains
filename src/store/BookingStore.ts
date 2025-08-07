@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import type { Booking } from "../moks/Booking";
-import type { Passenger } from "../moks/BookingPassenger";
+import type { Booking } from "../models/Booking";
+import type { Passenger } from "../models/BookingPassenger";
 
 interface BookingState {
   bookings: Booking[];

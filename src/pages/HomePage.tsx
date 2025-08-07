@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { SearchForm } from "../components/organisms/SearchForm";
 import { ScheduleService } from "../services/ScheduleService";
 import type { SearchFormData } from "../Validations/SearchFormData";
-import type { Schedule } from "../moks/Schedule";
+import type { Schedule } from "../models/Schedule";
 import { useAuthStore } from "../store/UseAuthStore";
 
 export function HomePage() {
