@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "../pages/Unauthorized";
 import AppLayouts from "../pages/root";
 import Registrasi from "../pages/auth/RegistrasiPage";
-import { Dashboard } from "../pages/admin/dashboard/Dashboard";
+import { Dashboard } from "../pages/admin/dashboard";
 import { HomePage } from "../pages/HomePage";
 import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
