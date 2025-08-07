@@ -13,11 +13,68 @@ import { HistoryPage } from "../pages/Customers/HistoryPage";
 import AdminLayout from "../Layouts/AdminLayout";
 import RoutesPage from "../pages/admin/routes/index";
 import TransactionPage from "../pages/admin/transactions";
+import SchedulesPage from "../pages/admin/schedules";
 import TrainsPage from "../pages/admin/trains";
 
 import StationPage from "../pages/admin/stations";
 
 const Router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayouts />,
+    children: [
+      {
+        path: '/',
+        element: <HomePage />
+      },
+      {
+        path: "/booking/:id",
+        element: <BookingPage />, // Form penumpang
+      },
+      {
+        path: "/payment/:id",
+        element: <PaymentPage />, // Ringkasan dan simulasi bayar
+      },
+      {
+        path: "/success/:bookingId",
+        element: <SuccessPage />,
+      },
+      {
+        path: '/auth/login',
+        element: <Login />
+      },
+      {
+        path: '/auth/registrasi',
+        element: <Registrasi />
+      },
+      {
+        path: '/unauthorized',
+        element: <Unauthorized />
+      }
+    ],
+  },
+  {
+    path: '/admin',
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        path: '/admin/dashboard',
+        element: <Dashboard />
+      },
+      {
+        path: '/admin/transactions',
+        element: <TransactionPage />
+      },
+      {
+        path: '/admin/schedules',
+        element: <SchedulesPage />
+      }
+    ]
+  },
     {
         path: '/',
         element: <AppLayouts/>,
