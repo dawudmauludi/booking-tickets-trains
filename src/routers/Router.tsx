@@ -13,6 +13,8 @@ import { HistoryPage } from "../pages/Customers/HistoryPage";
 import AdminLayout from "../Layouts/AdminLayout";
 import RoutesPage from "../pages/admin/routes/index";
 import TransactionPage from "../pages/admin/transactions";
+import TrainsPage from "../pages/admin/trains";
+
 import StationPage from "../pages/admin/stations";
 
 const Router = createBrowserRouter([
@@ -73,6 +75,10 @@ const Router = createBrowserRouter([
             {
                 path: 'transactions',
                 element: <TransactionPage/>
+            },
+            {
+                path: '/admin/trains',
+                element: <TrainsPage/>
             },
             {
                 path: 'stations',
