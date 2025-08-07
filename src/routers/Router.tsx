@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "../pages/Unauthorized";
 import AppLayouts from "../pages/root";
 import Registrasi from "../pages/auth/RegistrasiPage";
-import { Dashboard } from "../pages/admin/Dashboard";
+import { Dashboard } from "../pages/admin/dashboard/Dashboard";
 import { HomePage } from "../pages/HomePage";
 import { BookingPage } from "../pages/Customers/BookingPage";
 import { PaymentPage } from "../pages/Customers/PaymentPage";
@@ -40,12 +40,22 @@ const Router = createBrowserRouter([
                 element: <Registrasi/>
             },
             {
-                path: "/admin/dashboard",
+                path: "/admin",
                 element:(
                     <ProtectedRoute allowedRoles={["admin"]}>
-                        <Dashboard/>
+                        <AppLayouts/>
                     </ProtectedRoute>
-                )  
+                ),
+                children: [
+                    {
+                        path: "/admin/dashboard",
+                        element: <Dashboard/>
+                    },
+                    {
+                        
+                    }
+                ]
+
             },
             {
                 path: '/unauthorized',
